@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot Service Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.css" integrity="sha512-vA/fpEI8+rrDsPceGG+Rz4NBhaNE4lvJ8CrNfspqDQi6uyIs82Hwr8gm/E+SRs+ZKjJ2ihOdb6esDSAuJrWOhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .loading {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .dependency-item {
+            transition: all 0.2s ease;
+        }
+        .dependency-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .selected-dependency {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                Spring Boot <span class="gradient-text">Generator</span>
+            </h1>
+            <p class="text-xl text-white opacity-90">Generate your Spring Boot project with ease</p>
+        </div>
+
+        <!-- Main Form -->
+        <div class="max-w-6xl mx-auto">
+            <div class="glass-effect rounded-2xl p-8 card-hover">
+                <form id="projectForm">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Left Column -->
+                        <div class="space-y-6">
+                            <!-- Project Metadata -->
+                            <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                                <h3 class="text-xl font-semibold text-white mb-4">Project Metadata</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Group ID</label>
+                                        <input type="text" id="groupId" value="com.example" 
+                                               class="w-full px-3 py-2 bg-white bg-opacity-20 text-white placeholder-gray-300 rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    </div>
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Artifact ID</label>
+                                        <input type="text" id="artifactId" value="demo" 
+                                               class="w-full px-3 py-2 bg-white bg-opacity-20 text-white placeholder-gray-300 rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    </div>
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Name</label>
+                                        <input type="text" id="name" value="demo" 
+                                               class="w-full px-3 py-2 bg-white bg-opacity-20 text-white placeholder-gray-300 rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    </div>
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Package Name</label>
+                                        <input type="text" id="packageName" value="com.example.demo" 
+                                               class="w-full px-3 py-2 bg-white bg-opacity-20 text-white placeholder-gray-300 rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <label class="block text-white text-sm font-medium mb-2">Description</label>
+                                    <input type="text" id="description" value="Demo project for Spring Boot" 
+                                           class="w-full px-3 py-2 bg-white bg-opacity-20 text-white placeholder-gray-300 rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                </div>
+                            </div>
+
+                            <!-- Build Configuration -->
+                            <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                                <h3 class="text-xl font-semibold text-white mb-4">Build Configuration</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Build Type</label>
+                                        <select id="buildType" class="w-full px-3 py-2 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            <option value="maven-project" style="color: black;">Maven</option>
+                                            <option value="gradle-project" style="color: black;">Gradle</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Java Version</label>
+                                        <select id="javaVersion" class="w-full px-3 py-2 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            <option value="17" style="color: black;">Java 17</option>
+                                            <option value="21" style="color: black;">Java 21</option>
+                                            <option value="11" style="color: black;">Java 11</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Spring Boot Version</label>
+                                        <select id="bootVersion" class="w-full px-3 py-2 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            <option value="3.5.3" style="color: black;">3.5.3</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Packaging</label>
+                                        <select id="packaging" class="w-full px-3 py-2 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            <option value="jar" style="color: black;">JAR</option>
+                                            <option value="war" style="color: black;">WAR</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Database Configuration -->
+                            <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                                <h3 class="text-xl font-semibold text-white mb-4">Database Configuration</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Database Type</label>
+                                        <select id="databaseType" class="w-full px-3 py-2 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            <option value="h2" style="color: black;">H2 (In-memory)</option>
+                                            <option value="mysql" style="color: black;">MySQL</option>
+                                            <option value="postgresql" style="color: black;">PostgreSQL</option>
+                                            <option value="oracle" style="color: black;">Oracle</option>
+                                            <option value="mongodb" style="color: black;">MongoDB</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">DB Generation</label>
+                                        <select id="dbGeneration" class="w-full px-3 py-2 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            <option value="jpa" style="color: black;">JPA/Hibernate</option>
+                                            <option value="jdbc" style="color: black;">JDBC</option>
+                                            <option value="mybatis" style="color: black;">MyBatis</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex items-center space-x-6">
+                                    <label class="flex items-center text-white">
+                                        <input type="checkbox" id="liquibase" class="mr-2 rounded">
+                                        <span>Enable Liquibase</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Application Properties -->
+                            <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                                <h3 class="text-xl font-semibold text-white mb-4">Configuration</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-white text-sm font-medium mb-2">Properties Format</label>
+                                        <select id="propertiesFormat" class="w-full px-3 py-2 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            <option value="yaml" style="color: black;">YAML (.yml)</option>
+                                            <option value="properties" style="color: black;">Properties (.properties)</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-end">
+                                        <label class="flex items-center text-white">
+                                            <input type="checkbox" id="swaggerUI" class="mr-2 rounded" checked>
+                                            <span>Include Swagger UI</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column - Dependencies -->
+                        <div class="space-y-6">
+                            <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                                <h3 class="text-xl font-semibold text-white mb-4">Dependencies</h3>
+                                <div class="mb-4">
+                                    <input type="text" id="dependencySearch" placeholder="Search dependencies..." 
+                                           class="w-full px-3 py-2 bg-white bg-opacity-20 text-white placeholder-gray-300 rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                </div>
+                                <div id="dependencyCategories" class="space-y-4 max-h-96 overflow-y-auto">
+                                    <div class="text-center text-white">
+                                        <div class="loading mx-auto mb-2"></div>
+                                        Loading dependencies...
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Selected Dependencies -->
+                            <div class="bg-white bg-opacity-10 rounded-xl p-6">
+                                <h3 class="text-xl font-semibold text-white mb-4">Selected Dependencies</h3>
+                                <div id="selectedDependencies" class="space-y-2 min-h-12">
+                                    <p class="text-gray-300 text-sm">No dependencies selected</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <div class="mt-8 text-center">
+                        <button type="submit" id="generateBtn" 
+                                class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg transform transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                            <span id="generateText">Generate Project</span>
+                            <div id="generateLoading" class="loading mx-auto hidden"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let metadata = null;
+        let selectedDependencies = new Set();
+
+        // Fallback metadata when API is not available
+        const fallbackMetadata = {
+            bootVersion: {
+                values: [
+                    { id: "3.5.3", name: "3.5.3", default: true },
+                    { id: "3.4.9", name: "3.4.9" },
+                    { id: "3.3.16", name: "3.3.16" }
+                ]
+            },
+            dependencies: {
+                values: [
+                    {
+                        name: "Web",
+                        values: [
+                            { id: "web", name: "Spring Web", description: "Build web, including RESTful, applications using Spring MVC" },
+                            { id: "webflux", name: "Spring Reactive Web", description: "Build reactive web applications with Spring WebFlux" },
+                            { id: "rest-repositories", name: "Rest Repositories", description: "Exposing Spring Data repositories over REST via Spring Data REST" },
+                            { id: "session", name: "Spring Session", description: "Provides an API and implementations for managing user session information" },
+                            { id: "rest-repositories-hal-explorer", name: "Rest Repositories HAL Explorer", description: "Browsing Spring Data REST repositories in your browser" },
+                            { id: "hateoas", name: "Spring HATEOAS", description: "Eases the creation of RESTful APIs that follow the HATEOAS principle" },
+                            { id: "web-services", name: "Spring Web Services", description: "Facilitates contract-first SOAP development" }
+                        ]
+                    },
+                    {
+                        name: "SQL",
+                        values: [
+                            { id: "data-jpa", name: "Spring Data JPA", description: "Persist data in SQL stores with Java Persistence API using Spring Data and Hibernate" },
+                            { id: "data-jdbc", name: "Spring Data JDBC", description: "Persist data in SQL stores with plain JDBC using Spring Data" },
+                            { id: "h2", name: "H2 Database", description: "Provides a fast in-memory database that supports JDBC API" },
+                            { id: "mysql", name: "MySQL Driver", description: "MySQL JDBC driver" },
+                            { id: "postgresql", name: "PostgreSQL Driver", description: "A JDBC and R2DBC driver that allows Java programs to connect to a PostgreSQL database" },
+                            { id: "oracle", name: "Oracle Driver", description: "A JDBC driver that provides access to Oracle" },
+                            { id: "liquibase", name: "Liquibase Migration", description: "Liquibase database migration and source control library" },
+                            { id: "flyway", name: "Flyway Migration", description: "Version control for your database so you can migrate from any version to any other version" }
+                        ]
+                    },
+                    {
+                        name: "NoSQL",
+                        values: [
+                            { id: "data-mongodb", name: "Spring Data MongoDB", description: "Store data in flexible, JSON-like documents, meaning fields can vary from document to document" },
+                            { id: "data-redis", name: "Spring Data Redis", description: "Advanced and thread-safe Java Redis client for synchronous, asynchronous, and reactive usage" },
+                            { id: "data-elasticsearch", name: "Spring Data Elasticsearch", description: "A distributed, RESTful search and analytics engine with Spring Data Elasticsearch" }
+                        ]
+                    },
+                    {
+                        name: "Security",
+                        values: [
+                            { id: "security", name: "Spring Security", description: "Highly customizable authentication and access-control framework for Spring applications" },
+                            { id: "oauth2-authorization-server", name: "OAuth2 Authorization Server", description: "Spring Authorization Server" },
+                            { id: "oauth2-client", name: "OAuth2 Client", description: "Spring Boot integration for Spring Security's OAuth2/OpenID Connect client features" },
+                            { id: "oauth2-resource-server", name: "OAuth2 Resource Server", description: "Spring Boot integration for Spring Security's OAuth2 resource server features" }
+                        ]
+                    },
+                    {
+                        name: "Developer Tools",
+                        values: [
+                            { id: "devtools", name: "Spring Boot DevTools", description: "Provides fast application restarts, LiveReload, and configurations for enhanced development experience" },
+                            { id: "configuration-processor", name: "Spring Configuration Processor", description: "Generate metadata for developers to offer contextual help and code completion" },
+                            { id: "docker-compose", name: "Docker Compose Support", description: "Provides Docker Compose support for enhanced development experience" }
+                        ]
+                    },
+                    {
+                        name: "Observability",
+                        values: [
+                            { id: "actuator", name: "Spring Boot Actuator", description: "Supports built in (or custom) endpoints that let you monitor and manage your application" },
+                            { id: "prometheus", name: "Prometheus", description: "Expose Micrometer metrics in Prometheus format" }
+                        ]
+                    },
+                    {
+                        name: "Testing",
+                        values: [
+                            { id: "testcontainers", name: "Testcontainers", description: "Provide lightweight, throwaway instances of common databases for testing" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Load metadata from Spring Initializr with CORS proxy fallback
+        async function loadMetadata() {
+            try {
+                // Try multiple CORS proxy services
+                const corsProxies = [
+                    'https://api.allorigins.win/raw?url=',
+                    'https://corsproxy.io/?',
+                    ''  // Direct call as fallback
+                ];
+                
+                let response = null;
+                let lastError = null;
+                
+                for (const proxy of corsProxies) {
+                    try {
+                        const url = proxy + encodeURIComponent('https://start.spring.io/metadata/client');
+                        response = await fetch(proxy === '' ? 'https://start.spring.io/metadata/client' : url, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            metadata = await response.json();
+                            console.log('Successfully loaded metadata via', proxy || 'direct');
+                            break;
+                        }
+                    } catch (error) {
+                        lastError = error;
+                        console.warn(`Failed to load via ${proxy || 'direct'}:`, error.message);
+                        continue;
+                    }
+                }
+                
+                // If all attempts failed, use fallback data
+                if (!metadata) {
+                    console.warn('All API attempts failed, using fallback data');
+                    metadata = fallbackMetadata;
+                }
+                
+                populateDependencies();
+                populateBootVersions();
+                
+            } catch (error) {
+                console.error('Error loading metadata:', error);
+                // Use fallback data
+                metadata = fallbackMetadata;
+                populateDependencies();
+                populateBootVersions();
+            }
+        }
+
+        function populateBootVersions() {
+            if (!metadata || !metadata.bootVersion) return;
+            
+            const bootVersionSelect = document.getElementById('bootVersion');
+            bootVersionSelect.innerHTML = '';
+            
+            metadata.bootVersion.values.forEach(version => {
+                const option = document.createElement('option');
+                option.value = version.id;
+                option.textContent = version.name;
+                option.style.color = 'black';
+                if (version.default) option.selected = true;
+                bootVersionSelect.appendChild(option);
+            });
+        }
+
+        function populateDependencies() {
+            if (!metadata || !metadata.dependencies) return;
+
+            const container = document.getElementById('dependencyCategories');
+            container.innerHTML = '';
+
+            metadata.dependencies.values.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'mb-4';
+                
+                const categoryTitle = document.createElement('h4');
+                categoryTitle.className = 'text-lg font-medium text-white mb-2';
+                categoryTitle.textContent = category.name;
+                categoryDiv.appendChild(categoryTitle);
+
+                const dependenciesGrid = document.createElement('div');
+                dependenciesGrid.className = 'grid grid-cols-1 gap-2';
+
+                category.values.forEach(dep => {
+                    const depDiv = document.createElement('div');
+                    depDiv.className = 'dependency-item p-3 rounded-lg border border-white border-opacity-20 cursor-pointer';
+                    depDiv.dataset.depId = dep.id;
+                    
+                    depDiv.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-white font-medium">${dep.name}</div>
+                                <div class="text-gray-300 text-sm">${dep.description || ''}</div>
+                            </div>
+                            <input type="checkbox" class="rounded">
+                        </div>
+                    `;
+
+                    depDiv.addEventListener('click', () => toggleDependency(dep, depDiv));
+                    dependenciesGrid.appendChild(depDiv);
+                });
+
+                categoryDiv.appendChild(dependenciesGrid);
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        function toggleDependency(dep, element) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+
+            if (checkbox.checked) {
+                selectedDependencies.add(dep);
+                element.classList.add('selected-dependency');
+            } else {
+                selectedDependencies.delete(dep);
+                element.classList.remove('selected-dependency');
+            }
+
+            updateSelectedDependencies();
+        }
+
+        function updateSelectedDependencies() {
+            const container = document.getElementById('selectedDependencies');
+            
+            if (selectedDependencies.size === 0) {
+                container.innerHTML = '<p class="text-gray-300 text-sm">No dependencies selected</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            selectedDependencies.forEach(dep => {
+                const depTag = document.createElement('div');
+                depTag.className = 'inline-flex items-center bg-blue-600 text-white px-3 py-1 rounded-full text-sm mr-2 mb-2';
+                depTag.innerHTML = `
+                    ${dep.name}
+                    <button class="ml-2 text-white hover:text-red-300" onclick="removeDependency('${dep.id}')">×</button>
+                `;
+                container.appendChild(depTag);
+            });
+        }
+
+        function removeDependency(depId) {
+            const depToRemove = Array.from(selectedDependencies).find(dep => dep.id === depId);
+            if (depToRemove) {
+                selectedDependencies.delete(depToRemove);
+                
+                // Update UI
+                const depElement = document.querySelector(`[data-dep-id="${depId}"]`);
+                if (depElement) {
+                    depElement.classList.remove('selected-dependency');
+                    depElement.querySelector('input[type="checkbox"]').checked = false;
+                }
+                
+                updateSelectedDependencies();
+            }
+        }
+
+        // Search functionality
+        document.getElementById('dependencySearch').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const dependencyItems = document.querySelectorAll('.dependency-item');
+            
+            dependencyItems.forEach(item => {
+                const name = item.querySelector('.text-white').textContent.toLowerCase();
+                const description = item.querySelector('.text-gray-300').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || description.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Auto-update package name when group or artifact changes
+        document.getElementById('groupId').addEventListener('input', updatePackageName);
+        document.getElementById('artifactId').addEventListener('input', updatePackageName);
+
+        function updatePackageName() {
+            const groupId = document.getElementById('groupId').value;
+            const artifactId = document.getElementById('artifactId').value;
+            document.getElementById('packageName').value = `${groupId}.${artifactId}`;
+        }
+
+        // Form submission
+        document.getElementById('projectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const generateBtn = document.getElementById('generateBtn');
+            const generateText = document.getElementById('generateText');
+            const generateLoading = document.getElementById('generateLoading');
+            
+            generateText.style.display = 'none';
+            generateLoading.style.display = 'inline-block';
+            generateBtn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                
+                // Basic project info
+                formData.append('type', document.getElementById('buildType').value);
+                formData.append('language', 'java');
+                formData.append('bootVersion', document.getElementById('bootVersion').value);
+                formData.append('baseDir', document.getElementById('artifactId').value);
+                formData.append('groupId', document.getElementById('groupId').value);
+                formData.append('artifactId', document.getElementById('artifactId').value);
+                formData.append('name', document.getElementById('name').value);
+                formData.append('description', document.getElementById('description').value);
+                formData.append('packageName', document.getElementById('packageName').value);
+                formData.append('packaging', document.getElementById('packaging').value);
+                formData.append('javaVersion', document.getElementById('javaVersion').value);
+                
+                // Dependencies
+                const depsArray = Array.from(selectedDependencies).map(dep => dep.id);
+                
+                // Add database dependencies
+                const dbType = document.getElementById('databaseType').value;
+                if (dbType !== 'h2') {
+                    if (dbType === 'mysql') depsArray.push('mysql');
+                    else if (dbType === 'postgresql') depsArray.push('postgresql');
+                    else if (dbType === 'oracle') depsArray.push('oracle');
+                    else if (dbType === 'mongodb') depsArray.push('data-mongodb');
+                }
+                
+                // Add JPA if selected
+                if (document.getElementById('dbGeneration').value === 'jpa') {
+                    depsArray.push('data-jpa');
+                }
+                
+                // Add Liquibase if selected
+                if (document.getElementById('liquibase').checked) {
+                    depsArray.push('liquibase');
+                }
+                
+                // Add Swagger if selected
+                if (document.getElementById('swaggerUI').checked) {
+                    depsArray.push('web'); // Basic web dependency for Swagger
+                }
+                
+                depsArray.forEach(dep => formData.append('dependencies', dep));
+                
+                // Convert FormData to URLSearchParams for the download URL
+                const params = new URLSearchParams();
+                for (let [key, value] of formData) {
+                    params.append(key, value);
+                }
+                
+                const downloadUrl = `https://start.spring.io/starter.zip?${params.toString()}`;
+                console.log(downloadUrl)
+                
+                // For CORS issues with download, we'll use a different approach
+                try {
+                    // Try direct download first
+                    const response = await fetch(downloadUrl, {
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+                    
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `${document.getElementById('artifactId').value}.zip`;
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+                    } else {
+                        throw new Error('Direct download failed');
+                    }
+                } catch (downloadError) {
+                    console.warn('Direct download failed, opening in new tab:', downloadError);
+                    // Fallback: open download URL in new tab
+                    window.open(downloadUrl, '_blank');
+                    
+                    // Show user message
+                    alert('Download started in a new tab. If the download doesn\'t start automatically, please allow pop-ups for this site.');
+                }
+                
+            } catch (error) {
+                console.error('Error generating project:', error);
+                alert('Error generating project. Please try again.');
+            }
+            
+            generateText.style.display = 'inline';
+            generateLoading.style.display = 'none';
+            generateBtn.disabled = false;
+        });
+
+        // Initialize the app
+        loadMetadata();
+    </script>
+</body>
+</html>
